@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix frontend\" \"cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 5001 --reload\"",
-    "start": "concurrently \"npm run preview --prefix frontend\" \"cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 5001\"",
+    "start": "concurrently \"npm run preview --prefix frontend -- --host 0.0.0.0\" \"cd backend && uv run python run.py\"",
     "build": "npm run build --prefix frontend"
   },
   "devDependencies": {
