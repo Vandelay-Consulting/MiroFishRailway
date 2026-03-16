@@ -11,8 +11,8 @@
     },
     "variables": [
         {
-          "name": "BACKEND_URL",
-          "description": "Backend API URL",
+          "name": "VITE_API_BASE_URL",
+          "description": "Frontend API base URL",
           "value": "http://mirofish-fork.railway.internal:5001"
         },
         {
