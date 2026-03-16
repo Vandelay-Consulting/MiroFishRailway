@@ -1,41 +1,13 @@
 {
-    "$schema": "https://railway.app/railway.schema.json",
-    "build": {
-          "builder": "DOCKERFILE",
-          "dockerfilePath": "Dockerfile"
-    },
-    "deploy": {
-          "startCommand": "npm run dev",
-          "restartPolicyType": "ON_FAILURE",
-          "restartPolicyMaxRetries": 10
-    },
-    "variables": [
-        {
-          "name": "VITE_API_BASE_URL",
-          "description": "Frontend API base URL",
-          "value": "http://mirofish-fork.railway.internal:5001"
-        },
-        {
-          "name": "LLM_API_KEY",
-          "description": "Your LLM API key",
-          "required": true
-        },
-        {
-          "name": "LLM_BASE_URL",
-          "description": "LLM API endpoint",
-          "value": "https://api.openai.com/v1",
-          "required": true
-        },
-        {
-          "name": "LLM_MODEL_NAME",
-          "description": "LLM model name",
-          "value": "gpt-4o",
-          "required": true
-        },
-        {
-          "name": "ZEP_API_KEY",
-          "description": "Zep Cloud API key",
-          "required": true
-        }
-    ]
+  "name": "mirofish",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 5001 --reload\"",
+    "start": "concurrently \"npm run preview --prefix frontend\" \"cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 5001\"",
+    "build": "npm run build --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
 }
