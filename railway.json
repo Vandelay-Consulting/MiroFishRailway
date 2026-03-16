@@ -8,5 +8,34 @@
           "startCommand": "npm run dev",
           "restartPolicyType": "ON_FAILURE",
           "restartPolicyMaxRetries": 10
-    }
+    },
+    "variables": [
+        {
+          "name": "BACKEND_URL",
+          "description": "Backend API URL",
+          "value": "http://mirofish-fork.railway.internal:5001"
+        },
+        {
+          "name": "LLM_API_KEY",
+          "description": "Your LLM API key",
+          "required": true
+        },
+        {
+          "name": "LLM_BASE_URL",
+          "description": "LLM API endpoint",
+          "value": "https://api.openai.com/v1",
+          "required": true
+        },
+        {
+          "name": "LLM_MODEL_NAME",
+          "description": "LLM model name",
+          "value": "gpt-4o",
+          "required": true
+        },
+        {
+          "name": "ZEP_API_KEY",
+          "description": "Zep Cloud API key",
+          "required": true
+        }
+    ]
 }
