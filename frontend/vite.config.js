@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    allowedHosts: [
+      'localhost',
+      '127.0.0.1',
+      '.railway.app',
+      '.railway.internal'
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
