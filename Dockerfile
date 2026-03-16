@@ -23,11 +23,7 @@ RUN npm ci \
 # Copy source code
 COPY . .
 
-# Set build-time env vars for Vite
-ARG VITE_API_BASE_URL=http://localhost:5001
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
-
-# Build frontend with Vite
+# Build frontend with Vite (uses .env.production automatically)
 RUN cd frontend && npm run build
 
 # Railway assigns PORT dynamically; frontend=3000, backend=5001
@@ -35,5 +31,5 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 EXPOSE 3000 5001
 
-# Start both frontend and backend concurrently
-CMD ["npm", "run", "dev"]
+# Start backend + serve built frontend
+CMD ["npm", "run", "start"]
