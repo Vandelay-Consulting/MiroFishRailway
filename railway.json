@@ -1,49 +1,14 @@
 {
-  "name": "MiroFish",
-  "description": "Multi-agent AI prediction engine - simulate thousands of agents to predict outcomes",
-  "keywords": ["ai", "prediction", "agents", "simulation", "swarm-intelligence"],
-  "repo": "https://github.com/Vandelay-Consulting/MiroFishRailway",
-  "services": [
-    {
-      "name": "mirofish",
-      "source": {
-        "repo": "Vandelay-Consulting/MiroFishRailway",
-        "branch": "main"
-      },
-      "deploy": {
-        "startCommand": "npm run dev"
-      },
-      "networking": {
-        "serviceDomains": {
-          "mirofish": {
-            "port": 3000
-          }
-        }
-      },
-      "variables": [
-        {
-          "name": "LLM_API_KEY",
-          "description": "Your LLM API key (get from Aliyun Qwen, OpenAI, etc.)",
-          "required": true
-        },
-        {
-          "name": "LLM_BASE_URL",
-          "description": "LLM API endpoint (default: Aliyun Qwen)",
-          "value": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-          "required": true
-        },
-        {
-          "name": "LLM_MODEL_NAME",
-          "description": "LLM model name (default: qwen-plus)",
-          "value": "qwen-plus",
-          "required": true
-        },
-        {
-          "name": "ZEP_API_KEY",
-          "description": "Your Zep Cloud API key (get from https://app.getzep.com/)",
-          "required": true
-        }
-      ]
+    "$schema": "https://railway.app/railway.schema.json",
+    "build": {
+          "builder": "DOCKERFILE",
+          "dockerfilePath": "Dockerfile"
+    },
+    "deploy": {
+          "startCommand": "npm run dev",
+          "healthcheckPath": "/",
+          "healthcheckTimeout": 300,
+          "restartPolicyType": "ON_FAILURE",
+          "restartPolicyMaxRetries": 10
     }
-  ]
 }
