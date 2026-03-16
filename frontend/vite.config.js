@@ -15,10 +15,17 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: process.env.BACKEND_URL || 'http://localhost:5001',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        ws: true
       }
+    },
+    middlewareMode: false,
+    hmr: {
+      protocol: 'wss',
+      host: process.env.RAILWAY_PUBLIC_DOMAIN || 'localhost',
+      port: 443
     }
   }
 })
