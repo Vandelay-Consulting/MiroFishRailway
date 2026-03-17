@@ -5,7 +5,7 @@
       <div class="nav-brand">MIROFISH</div>
       <div class="nav-links">
         <button class="lang-switch" @click="toggleLang">
-          {{ locale === 'en' ? 'in文' : 'EN' }}
+          {{ locale === 'en' ? 'ZH' : 'EN' }}
         </button>
         <a href="https://github.com/666ghj/MiroFish" target="_blank" class="github-link">
           {{ $t('nav.github') }} <span class="arrow">↗</span>
@@ -302,11 +302,11 @@ const scrollToBottom = () => {
 const startSimulation = () => {
   if (!canSubmit.value || loading.value) return
   
-  // store待on传的data
+  // Store pending upload data
   import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
     setPendingUpload(files.value, formData.value.simulationRequirement)
     
-    // 立即跳转toProcess页面（use特殊标识表示new建project）
+    // Immediately navigate to Process page (use special identifier for new project)
     router.push({
       name: 'Process',
       params: { projectId: 'new' }
@@ -316,7 +316,7 @@ const startSimulation = () => {
 </script>
 
 <style scoped>
-/* 全局变量与reset */
+/* Global variables and reset */
 :root {
   --black: #000000;
   --white: #FFFFFF;
@@ -325,8 +325,8 @@ const startSimulation = () => {
   --gray-text: #666666;
   --border: #E5E5E5;
   /* 
-    use Space Grotesk 作为主要title字体，JetBrains Mono 作为代码/label字体
-    ensurealreadyin index.html 引入这些 Google Fonts 
+    Use Space Grotesk as primary heading font, JetBrains Mono as code/label font
+    Ensure these Google Fonts are already imported in index.html
   */
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
@@ -340,7 +340,7 @@ const startSimulation = () => {
   color: var(--black);
 }
 
-/* 顶部导航 */
+/* Top navigation */
 .navbar {
   height: 60px;
   background: var(--black);
@@ -400,14 +400,14 @@ const startSimulation = () => {
   font-family: sans-serif;
 }
 
-/* 主要content区 */
+/* Main content area */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 60px 40px;
 }
 
-/* Hero 区域 */
+/* Hero section */
 .hero-section {
   display: flex;
   justify-content: space-between;
@@ -538,7 +538,7 @@ const startSimulation = () => {
 }
 
 .hero-logo {
-  max-width: 500px; /* 调整logosize */
+  max-width: 500px; /* Adjust logo size */
   width: 100%;
 }
 
@@ -560,7 +560,7 @@ const startSimulation = () => {
   border-color: var(--orange);
 }
 
-/* Dashboard 双栏布局 */
+/* Dashboard two-column layout */
 .dashboard-section {
   display: flex;
   gap: 60px;
@@ -575,7 +575,7 @@ const startSimulation = () => {
   flex-direction: column;
 }
 
-/* 左侧面板 */
+/* Left panel */
 .left-panel {
   flex: 0.8;
 }
@@ -631,7 +631,7 @@ const startSimulation = () => {
   color: #999;
 }
 
-/* projectSimulation步骤介绍 */
+/* Project simulation step introduction */
 .steps-container {
   border: 1px solid var(--border);
   padding: 30px;
@@ -687,14 +687,14 @@ const startSimulation = () => {
   color: var(--gray-text);
 }
 
-/* 右侧交互控制台 */
+/* Right interactive console */
 .right-panel {
   flex: 1.2;
 }
 
 .console-box {
-  border: 1px solid #CCC; /* outside部实线 */
-  padding: 8px; /* withinedge距形成双重edge框感 */
+  border: 1px solid #CCC; /* Outer solid border */
+  padding: 8px; /* Inner padding creates double border effect */
 }
 
 .console-section {
@@ -862,7 +862,7 @@ const startSimulation = () => {
   overflow: hidden;
 }
 
-/* can点击status（非禁用） */
+/* Clickable state (non-disabled) */
 .start-engine-btn:not(:disabled) {
   background: var(--black);
   border: 1px solid var(--black);
@@ -887,14 +887,14 @@ const startSimulation = () => {
   border: 1px solid #E5E5E5;
 }
 
-/* 引导动画：微妙的edge框脉冲 */
+/* Guide animation: subtle border pulse */
 @keyframes pulse-border {
   0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2); }
   70% { box-shadow: 0 0 0 6px rgba(0, 0, 0, 0); }
   100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
-/* response式适配 */
+/* Responsive adaptation */
 @media (max-width: 1024px) {
   .dashboard-section {
     flex-direction: column;

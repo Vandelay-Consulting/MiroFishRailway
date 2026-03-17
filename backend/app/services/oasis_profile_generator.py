@@ -1230,35 +1230,35 @@ Important:
         """
         import csv
 
-        # ensurefile扩展名是.csv
+        # Ensure file extension is .csv
         if not file_path.endswith(".csv"):
             file_path = file_path.replace(".json", ".csv")
 
         with open(file_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
 
-            # writeOASIS要求的表头
+            # Write OASIS required headers
             headers = ["user_id", "name", "username", "user_char", "description"]
             writer.writerow(headers)
 
-            # writedata行
+            # Write data rows
             for idx, profile in enumerate(profiles):
-                # user_char: completeprofile（bio + persona），forLLMsystem提示
+                # user_char: complete profile (bio + persona), for LLM system prompt
                 user_char = profile.bio
                 if profile.persona and profile.persona != profile.bio:
                     user_char = f"{profile.bio} {profile.persona}"
-                # processnewline符（CSVin用space替代）
+                # Process newline characters (replace with spaces in CSV)
                 user_char = user_char.replace("\n", " ").replace("\r", " ")
 
-                # description: 简短简介，foroutside部display
+                # description: short bio, for external display
                 description = profile.bio.replace("\n", " ").replace("\r", " ")
 
                 row = [
-                    idx,  # user_id: from0start的顺序ID
-                    profile.name,  # name: 真实姓名
-                    profile.user_name,  # username: 用户名
-                    user_char,  # user_char: completeprofile（within部LLMuse）
-                    description,  # description: 简短简介（outside部display）
+                    idx,  # user_id: sequential ID starting from 0
+                    profile.name,  # name: real name
+                    profile.user_name,  # username: username
+                    user_char,  # user_char: complete profile (internal LLM use)
+                    description,  # description: short bio (external display)
                 ]
                 writer.writerow(row)
 
@@ -1279,10 +1279,10 @@ Important:
 
         # Chinese mapping
         gender_map = {
-            "男": "male",
-            "女": "female",
-            "机构": "other",
-            "其他": "other",
+            "\u7537": "male",  # Chinese: male
+            "\u5973": "female",  # Chinese: female
+            "\u673a\u6784": "other",  # Chinese: organization
+            "\u5176\u4ed6": "other",  # Chinese: other
             # English already exists
             "male": "male",
             "female": "female",
@@ -1311,11 +1311,11 @@ Important:
         """
         data = []
         for idx, profile in enumerate(profiles):
-            # use与 to_reddit_format() 一致的format
+            # Use format consistent with to_reddit_format()
             item = {
                 "user_id": profile.user_id
                 if profile.user_id is not None
-                else idx,  # 关key：mustcontain user_id
+                else idx,  # Key: must contain user_id
                 "username": profile.user_name,
                 "name": profile.name,
                 "bio": profile.bio[:150] if profile.bio else f"{profile.name}",
@@ -1323,11 +1323,11 @@ Important:
                 or f"{profile.name} is a participant in social discussions.",
                 "karma": profile.karma if profile.karma else 1000,
                 "created_at": profile.created_at,
-                # OASIS必需field - ensure都有defaultvalue
+                # OASIS required fields - ensure all have default values
                 "age": profile.age if profile.age else 30,
                 "gender": self._normalize_gender(profile.gender),
                 "mbti": profile.mbti if profile.mbti else "ISTJ",
-                "country": profile.country if profile.country else "in国",
+                "country": profile.country if profile.country else "China",
             }
 
             # optionalfield

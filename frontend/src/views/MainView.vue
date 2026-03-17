@@ -22,7 +22,7 @@
 
       <div class="header-right">
         <button class="lang-switch" @click="toggleLang">
-          {{ locale === 'en' ? 'in文' : 'EN' }}
+          {{ locale === 'en' ? 'ZH' : 'EN' }}
         </button>
         <div class="workflow-step">
           <span class="step-num">{{ $t('steps.step') }} {{ currentStep }}{{ $t('steps.of') }}5</span>

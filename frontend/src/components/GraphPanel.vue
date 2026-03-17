@@ -1253,7 +1253,7 @@ input:checked + .slider:before {
   50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6)); }
 }
 
-/* Simulationendafter的提示样式 */
+/* Simulation end prompt styles */
 .graph-building-hint.finished-hint {
   background: rgba(0, 0, 0, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.1);

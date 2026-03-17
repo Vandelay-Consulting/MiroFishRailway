@@ -572,7 +572,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 容器 */
+/* Container */
 .history-database {
   position: relative;
   width: 100%;
@@ -582,13 +582,13 @@ onUnmounted(() => {
   overflow: visible;
 }
 
-/* 无project时简化display */
+/* Simplified display when no projects */
 .history-database.no-projects {
   min-height: auto;
   padding: 40px 0 20px;
 }
 
-/* 技术网格背景 */
+/* Technical grid background */
 .tech-grid-bg {
   position: absolute;
   top: 0;
@@ -599,7 +599,7 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* useCSS背景图案create固定between距的正方形网格 */
+/* Use CSS background pattern to create fixed-spacing square grid */
 .grid-pattern {
   position: absolute;
   top: 0;
@@ -610,7 +610,7 @@ onUnmounted(() => {
     linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 50px 50px;
-  /* from左on角start定位，height变化时只in底部扩展，not影响already有网格位置 */
+  /* Position from top-left corner, height changes only expand at bottom, not affecting existing grid positions */
   background-position: top left;
 }
 
@@ -626,7 +626,7 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* title区域 */
+/* Title area */
 .section-header {
   position: relative;
   z-index: 100;
@@ -654,7 +654,7 @@ onUnmounted(() => {
   text-transform: uppercase;
 }
 
-/* 卡片容器 */
+/* Card container */
 .cards-container {
   position: relative;
   display: flex;
@@ -662,10 +662,10 @@ onUnmounted(() => {
   align-items: flex-start;
   padding: 0 40px;
   transition: min-height 700ms cubic-bezier(0.23, 1, 0.32, 1);
-  /* min-height 由 JS dynamiccalculate，according to卡片count自适应 */
+  /* min-height dynamically calculated by JS, adapts based on card count */
 }
 
-/* project卡片 */
+/* Project card */
 .project-card {
   position: absolute;
   width: 280px;
@@ -688,7 +688,7 @@ onUnmounted(() => {
   z-index: 1000 !important;
 }
 
-/* 卡片头部 */
+/* Card header */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -706,7 +706,7 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 功能status图标组 */
+/* Feature status icon group */
 .card-status-icons {
   display: flex;
   align-items: center;
@@ -733,7 +733,7 @@ onUnmounted(() => {
   opacity: 0.5;
 }
 
-/* 轮数progressdisplay */
+/* Round progress display */
 .card-progress {
   display: flex;
   align-items: center;
@@ -753,7 +753,7 @@ onUnmounted(() => {
 .card-progress.not-started { color: #9CA3AF; }  /* Not Started - Gray */
 .card-status.pending { color: #9CA3AF; }
 
-/* filelist区域 */
+/* File list area */
 .card-files-wrapper {
   position: relative;
   width: 100%;
@@ -773,7 +773,7 @@ onUnmounted(() => {
   gap: 4px;
 }
 
-/* 更多file提示 */
+/* More files hint */
 .files-more {
   display: flex;
   align-items: center;
@@ -803,7 +803,7 @@ onUnmounted(() => {
   border-color: #e5e7eb;
 }
 
-/* 简约filelabel样式 */
+/* Simple file tag styles */
 .file-tag {
   display: inline-flex;
   align-items: center;
@@ -842,7 +842,7 @@ onUnmounted(() => {
   letter-spacing: 0.1px;
 }
 
-/* 无file时的占位 */
+/* Placeholder when no files */
 .files-empty {
   display: flex;
   align-items: center;
@@ -863,13 +863,13 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* 悬停时file区域效果 */
+/* File area effect on hover */
 .project-card:hover .card-files-wrapper {
   border-color: #d1d5db;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
-/* 角落装饰 */
+/* Corner decorations */
 .corner-mark.top-left-only {
   position: absolute;
   top: 6px;
@@ -882,7 +882,7 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* 卡片title */
+/* Card title */
 .card-title {
   font-family: 'Inter', -apple-system, sans-serif;
   font-size: 0.9rem;
@@ -900,7 +900,7 @@ onUnmounted(() => {
   color: #2563EB;
 }
 
-/* 卡片description */
+/* Card description */
 .card-desc {
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
@@ -914,7 +914,7 @@ onUnmounted(() => {
   -webkit-box-orient: vertical;
 }
 
-/* 卡片底部 */
+/* Card footer */
 .card-footer {
   position: relative;
   display: flex;
@@ -928,14 +928,14 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 日期时between组合 */
+/* Date and time group */
 .card-datetime {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* 底部轮数progressdisplay */
+/* Bottom round progress display */
 .card-footer .card-progress {
   display: flex;
   align-items: center;
@@ -954,7 +954,7 @@ onUnmounted(() => {
 .card-footer .card-progress.in-progress { color: #F59E0B; }
 .card-footer .card-progress.not-started { color: #9CA3AF; }
 
-/* 底部装饰线 */
+/* Bottom decorative line */
 .card-bottom-line {
   position: absolute;
   bottom: 0;
@@ -998,7 +998,7 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* response式 */
+/* Responsive */
 @media (max-width: 1200px) {
   .project-card {
     width: 240px;
@@ -1040,7 +1040,7 @@ onUnmounted(() => {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* 动画过渡 */
+/* Animation transitions */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;
@@ -1069,7 +1069,7 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-/* 弹窗头部 */
+/* Dialog header */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1136,7 +1136,7 @@ onUnmounted(() => {
   color: #111827;
 }
 
-/* 弹窗content */
+/* Dialog content */
 .modal-body {
   padding: 24px 32px;
 }
@@ -1178,7 +1178,7 @@ onUnmounted(() => {
   padding-right: 4px;
 }
 
-/* custom滚动item样式 */
+/* Custom scrollbar styles */
 .modal-files::-webkit-scrollbar {
   width: 4px;
 }
@@ -1232,7 +1232,7 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* 推演回放split线 */
+/* Simulation replay divider */
 .modal-divider {
   display: flex;
   align-items: center;
@@ -1256,7 +1256,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* 导航by钮 */
+/* Navigation buttons */
 .modal-actions {
   display: flex;
   gap: 16px;
@@ -1323,7 +1323,7 @@ onUnmounted(() => {
   color: #111827;
 }
 
-/* notcan回放提示 */
+/* Cannot replay hint */
 .modal-playback-hint {
   display: flex;
   align-items: center;

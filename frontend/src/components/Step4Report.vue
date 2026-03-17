@@ -127,7 +127,7 @@
             </div>
           </div>
 
-          <!-- Next Step Button - incompleteafterdisplay -->
+          <!-- Next Step Button - displayed after completion -->
           <button v-if="isComplete" class="next-step-btn" @click="goToInteraction">
             <span>{{ $t('steps.report.enterInteraction') }}</span>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -194,7 +194,7 @@
                     </div>
                   </template>
                   
-                  <!-- Section Content Generated (contentgeneratecomplete，but整sectioncan能still没complete) -->
+                  <!-- Section Content Generated (content generation complete, but the entire section may not yet be complete) -->
                   <template v-if="log.action === 'section_content'">
                     <div class="section-tag content-ready">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -205,7 +205,7 @@
                     </div>
                   </template>
 
-                  <!-- Section Complete (sectiongeneratecomplete) -->
+                  <!-- Section Complete (section generation complete) -->
                   <template v-if="log.action === 'section_complete'">
                     <div class="section-tag completed">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -315,7 +315,7 @@
                         Final: {{ log.details?.has_final_answer ? 'Yes' : 'No' }}
                       </span>
                     </div>
-                    <!-- 当是final答案时，display特殊提示 -->
+                    <!-- When this is the final answer, display special prompt -->
                     <div v-if="log.details?.has_final_answer" class="final-answer-hint">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="20 6 9 17 4 12"></polyline>
@@ -434,22 +434,22 @@ const showRawResult = reactive({})
 
 // Toggle functions
 const toggleRawResult = (timestamp, event) => {
-  // saveby钮相for视口的位置
+  // Save button position relative to viewport
   const button = event?.target
   const buttonRect = button?.getBoundingClientRect()
   const buttonTopBeforeToggle = buttonRect?.top
   
-  // 切换status
+  // Toggle state
   showRawResult[timestamp] = !showRawResult[timestamp]
   
-  // wait DOM updateafter，调整滚动位置以保持by钮in相同位置
+  // After DOM update, adjust scroll position to keep button at same location
   if (button && buttonTopBeforeToggle !== undefined && rightPanel.value) {
     nextTick(() => {
       const newButtonRect = button.getBoundingClientRect()
       const buttonTopAfterToggle = newButtonRect.top
       const scrollDelta = buttonTopAfterToggle - buttonTopBeforeToggle
       
-      // 调整滚动位置
+      // Adjust scroll position
       rightPanel.value.scrollTop += scrollDelta
     })
   }
@@ -467,7 +467,7 @@ const toggleSectionContent = (idx) => {
 }
 
 const toggleSectionCollapse = (idx) => {
-  // 只有Completed的section才能折叠
+  // Only completed sections can be collapsed
   if (!generatedSections.value[idx + 1]) return
   const newSet = new Set(collapsedSections.value)
   if (newSet.has(idx)) {
@@ -500,32 +500,32 @@ const toolConfig = {
   'insight_forge': {
     name: 'Deep Insight',
     color: 'purple',
-    icon: 'lightbulb' // 灯泡图标 - 代表洞察
+    icon: 'lightbulb' // Lightbulb icon - represents insight
   },
   'panorama_search': {
     name: 'Panorama Search',
     color: 'blue',
-    icon: 'globe' // 地球图标 - 代表全景search
+    icon: 'globe' // Globe icon - represents panoramic search
   },
   'interview_agents': {
     name: 'Agent Interview',
     color: 'green',
-    icon: 'users' // 用户图标 - 代表对话
+    icon: 'users' // Users icon - represents conversation
   },
   'quick_search': {
     name: 'Quick Search',
     color: 'orange',
-    icon: 'zap' // 闪电图标 - 代表快速
+    icon: 'zap' // Lightning icon - represents speed
   },
   'get_graph_statistics': {
     name: 'Graph Stats',
     color: 'cyan',
-    icon: 'chart' // 图表图标 - 代表count
+    icon: 'chart' // Chart icon - represents statistics
   },
   'get_entities_by_type': {
     name: 'Entity Query',
     color: 'pink',
-    icon: 'database' // data库图标 - 代表entity
+    icon: 'database' // Database icon - represents entities
   }
 }
 
@@ -554,15 +554,15 @@ const parseInsightForge = (text) => {
   }
   
   try {
-    // extractanalyze问题
+    // Extract analysis question
     const queryMatch = text.match(/analyze问题:\s*(.+?)(?:\n|$)/)
     if (queryMatch) result.query = queryMatch[1].trim()
     
-    // extract预测场景
+    // Extract prediction scenario
     const reqMatch = text.match(/预测场景:\s*(.+?)(?:\n|$)/)
     if (reqMatch) result.simulationRequirement = reqMatch[1].trim()
     
-    // extractcountdata - 匹配"相关预测事实: Xitem"format
+    // Extract statistics data - match "related prediction facts: X items" format
     const factMatch = text.match(/相关预测事实:\s*(\d+)/)
     const entityMatch = text.match(/涉及entity:\s*(\d+)/)
     const relMatch = text.match(/relationship链:\s*(\d+)/)
@@ -570,14 +570,14 @@ const parseInsightForge = (text) => {
     if (entityMatch) result.stats.entities = parseInt(entityMatch[1])
     if (relMatch) result.stats.relationships = parseInt(relMatch[1])
     
-    // extract子问题 - completeextract，not限制count
+    // Extract sub-questions - complete extraction, no count limit
     const subQSection = text.match(/### analyze的子问题\n([\s\S]*?)(?=\n###|$)/)
     if (subQSection) {
       const lines = subQSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.subQueries = lines.map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
     }
     
-    // extract关key事实 - completeextract，not限制count
+    // Extract key facts - complete extraction, no count limit
     const factsSection = text.match(/### 【关key事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
     if (factsSection) {
       const lines = factsSection[1].split('\n').filter(l => l.match(/^\d+\./))
@@ -587,7 +587,7 @@ const parseInsightForge = (text) => {
       }).filter(Boolean)
     }
     
-    // extract核心entity - completeextract，containsummaryand相关事实数
+    // Extract core entities - complete extraction, including summary and related fact count
     const entitySection = text.match(/### 【核心entity】\n([\s\S]*?)(?=\n###|$)/)
     if (entitySection) {
       const entityText = entitySection[1]
@@ -606,7 +606,7 @@ const parseInsightForge = (text) => {
       }).filter(e => e.name)
     }
     
-    // extractrelationship链 - completeextract，not限制count
+    // Extract relationship chains - complete extraction, no count limit
     const relSection = text.match(/### 【relationship链】\n([\s\S]*?)(?=\n###|$)/)
     if (relSection) {
       const lines = relSection[1].split('\n').filter(l => l.trim().startsWith('-'))
@@ -635,11 +635,11 @@ const parsePanorama = (text) => {
   }
   
   try {
-    // extractquery
+    // Extract query
     const queryMatch = text.match(/query:\s*(.+?)(?:\n|$)/)
     if (queryMatch) result.query = queryMatch[1].trim()
     
-    // extractcountdata
+    // Extract statistics data
     const nodesMatch = text.match(/Total nodes数:\s*(\d+)/)
     const edgesMatch = text.match(/总edge数:\s*(\d+)/)
     const activeMatch = text.match(/currentvalid事实:\s*(\d+)/)
@@ -649,18 +649,18 @@ const parsePanorama = (text) => {
     if (activeMatch) result.stats.activeFacts = parseInt(activeMatch[1])
     if (histMatch) result.stats.historicalFacts = parseInt(histMatch[1])
     
-    // extractcurrentvalid事实 - completeextract，not限制count
+    // Extract currently valid facts - complete extraction, no count limit
     const activeSection = text.match(/### 【currentvalid事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
     if (activeSection) {
       const lines = activeSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.activeFacts = lines.map(l => {
-        // remove编号and引号
+        // Remove numbering and quotes
         const factText = l.replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '').trim()
         return factText
       }).filter(Boolean)
     }
     
-    // extract历史/过期事实 - completeextract，not限制count
+    // Extract historical/expired facts - complete extraction, no count limit
     const histSection = text.match(/### 【历史\/过期事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
     if (histSection) {
       const lines = histSection[1].split('\n').filter(l => l.match(/^\d+\./))
@@ -670,7 +670,7 @@ const parsePanorama = (text) => {
       }).filter(Boolean)
     }
     
-    // extract涉及entity - completeextract，not限制count
+    // Extract involved entities - complete extraction, no count limit
     const entitySection = text.match(/### 【涉及entity】\n([\s\S]*?)(?=\n###|$)/)
     if (entitySection) {
       const lines = entitySection[1].split('\n').filter(l => l.trim().startsWith('-'))
@@ -699,11 +699,11 @@ const parseInterview = (text) => {
   }
   
   try {
-    // extract采访主题
+    // Extract interview topic
     const topicMatch = text.match(/\*\*采访主题:\*\*\s*(.+?)(?:\n|$)/)
     if (topicMatch) result.topic = topicMatch[1].trim()
     
-    // extract采访人数（如 "5 / 9 位SimulationAgent"）
+    // Extract number of interviewees (e.g., "5 / 9 Simulation Agents")
     const countMatch = text.match(/\*\*采访人数:\*\*\s*(\d+)\s*\/\s*(\d+)/)
     if (countMatch) {
       result.successCount = parseInt(countMatch[1])
@@ -711,13 +711,13 @@ const parseInterview = (text) => {
       result.agentCount = `${countMatch[1]} / ${countMatch[2]}`
     }
     
-    // extract采访对象选择理由
+    // Extract interviewee selection reasons
     const reasonMatch = text.match(/### 采访对象选择理由\n([\s\S]*?)(?=\n---\n|\n### 采访实录)/)
     if (reasonMatch) {
       result.selectionReason = reasonMatch[1].trim()
     }
     
-    // parseeach人的选择理由
+    // Parse individual selection reasons
     const parseIndividualReasons = (reasonText) => {
       const reasons = {}
       if (!reasonText) return reasons
@@ -731,16 +731,16 @@ const parseInterview = (text) => {
         let name = null
         let reasonStart = null
         
-        // format1: 数字. **Name（index=X）**：理由
-        // 例如: 1. **校友_345（index=1）**：作为武大校友...
+        // Format 1: number. **Name(index=X)**: reason
+        // Example: 1. **Alumni_345(index=1)**: As a university alumnus...
         headerMatch = line.match(/^\d+\.\s*\*\*([^*（(]+)(?:[（(]index\s*=?\s*\d+[)）])?\*\*[：:]\s*(.*)/)
         if (headerMatch) {
           name = headerMatch[1].trim()
           reasonStart = headerMatch[2]
         }
         
-        // format2: - 选择Name（index X）：理由
-        // 例如: - 选择家长_601（index 0）：作为家长群体代表...
+        // Format 2: - Select Name(index X): reason
+        // Example: - Select Parent_601(index 0): As a parent group representative...
         if (!headerMatch) {
           headerMatch = line.match(/^-\s*选择([^（(]+)(?:[（(]index\s*=?\s*\d+[)）])?[：:]\s*(.*)/)
           if (headerMatch) {
@@ -749,8 +749,8 @@ const parseInterview = (text) => {
           }
         }
         
-        // format3: - **Name（index X）**：理由
-        // 例如: - **家长_601（index 0）**：作为家长群体代表...
+        // Format 3: - **Name(index X)**: reason
+        // Example: - **Parent_601(index 0)**: As a parent group representative...
         if (!headerMatch) {
           headerMatch = line.match(/^-\s*\*\*([^*（(]+)(?:[（(]index\s*=?\s*\d+[)）])?\*\*[：:]\s*(.*)/)
           if (headerMatch) {
@@ -760,20 +760,20 @@ const parseInterview = (text) => {
         }
         
         if (name) {
-          // saveon一人的理由
+          // Save previous person's reason
           if (currentName && currentReason.length > 0) {
             reasons[currentName] = currentReason.join(' ').trim()
           }
-          // startnew的人
+          // Start new person
           currentName = name
           currentReason = reasonStart ? [reasonStart.trim()] : []
         } else if (currentName && line.trim() && !line.match(/^not选|^综on|^final选择/)) {
-          // 理由的续行（排除结尾总结segment落）
+          // Continuation line for reason (exclude trailing summary paragraphs)
           currentReason.push(line.trim())
         }
       }
       
-      // savefinally一人的理由
+      // Save last person's reason
       if (currentName && currentReason.length > 0) {
         reasons[currentName] = currentReason.join(' ').trim()
       }
@@ -783,7 +783,7 @@ const parseInterview = (text) => {
     
     const individualReasons = parseIndividualReasons(result.selectionReason)
     
-    // extracteach采访record
+    // Extract each interview record
     const interviewBlocks = text.split(/#### 采访 #\d+:/).slice(1)
     
     interviewBlocks.forEach((block, index) => {
@@ -800,33 +800,33 @@ const parseInterview = (text) => {
         quotes: []
       }
       
-      // extracttitle（如 "学生"、"教育from业者" 等）
+      // Extract title (e.g., "Student", "Educator", etc.)
       const titleMatch = block.match(/^(.+?)\n/)
       if (titleMatch) interview.title = titleMatch[1].trim()
       
-      // extract姓名androle
+      // Extract name and role
       const nameRoleMatch = block.match(/\*\*(.+?)\*\*\s*\((.+?)\)/)
       if (nameRoleMatch) {
         interview.name = nameRoleMatch[1].trim()
         interview.role = nameRoleMatch[2].trim()
-        // set该人的选择理由
+        // Set this person's selection reason
         interview.selectionReason = individualReasons[interview.name] || ''
       }
       
-      // extract简介
+      // Extract bio
       const bioMatch = block.match(/_简介:\s*([\s\S]*?)_\n/)
       if (bioMatch) {
         interview.bio = bioMatch[1].trim().replace(/\.\.\.$/, '...')
       }
       
-      // extract问题list
+      // Extract question list
       const qMatch = block.match(/\*\*Q:\*\*\s*([\s\S]*?)(?=\n\n\*\*A:\*\*|\*\*A:\*\*)/)
       if (qMatch) {
         const qText = qMatch[1].trim()
-        // by数字编号split问题
+        // Split questions by number
         const questions = qText.split(/\n\d+\.\s+/).filter(q => q.trim())
         if (questions.length > 0) {
-          // if第一问题before面有"1."，需要特殊process
+          // If first question has "1." prefix, need special handling
           const firstQ = qText.match(/^1\.\s+(.+)/)
           if (firstQ) {
             interview.questions = [firstQ[1].trim(), ...questions.slice(1).map(q => q.trim())]
@@ -836,12 +836,12 @@ const parseInterview = (text) => {
         }
       }
       
-      // extract回答 - 分TwitterandReddit
+      // Extract answers - split by Twitter and Reddit
       const answerMatch = block.match(/\*\*A:\*\*\s*([\s\S]*?)(?=\*\*关key引言|$)/)
       if (answerMatch) {
         const answerText = answerMatch[1].trim()
         
-        // 分离TwitterandReddit回答
+        // Separate Twitter and Reddit answers
         const twitterMatch = answerText.match(/【Twitterplatform回答】\n?([\s\S]*?)(?=【Redditplatform回答】|$)/)
         const redditMatch = answerText.match(/【Redditplatform回答】\n?([\s\S]*?)$/)
         
@@ -852,9 +852,9 @@ const parseInterview = (text) => {
           interview.redditAnswer = redditMatch[1].trim()
         }
         
-        // platformfallbacklogic（兼容oldformat：只有一platform标记的情况）
+        // Platform fallback logic (backward compatible with old format: single platform marker)
         if (!twitterMatch && redditMatch) {
-          // 只有 Reddit 回答，onlyin非占位text时复制为defaultdisplay
+          // Only Reddit answer, copy as default display when it's not a placeholder
           if (interview.redditAnswer && interview.redditAnswer !== '（该platformnot获得回复）') {
             interview.twitterAnswer = interview.redditAnswer
           }
@@ -863,18 +863,18 @@ const parseInterview = (text) => {
             interview.redditAnswer = interview.twitterAnswer
           }
         } else if (!twitterMatch && !redditMatch) {
-          // 没有分platform标记（极oldformat），整体作为回答
+          // No platform markers (very old format), use entire text as answer
           interview.twitterAnswer = answerText
         }
       }
       
-      // extract关key引言（兼容多种引号format）
+      // Extract key quotes (compatible with multiple quote formats)
       const quotesMatch = block.match(/\*\*关key引言:\*\*\n([\s\S]*?)(?=\n---|\n####|$)/)
       if (quotesMatch) {
         const quotesText = quotesMatch[1]
-        // 优first匹配 > "text" format
+        // Prefer matching > "text" format
         let quoteMatches = quotesText.match(/> "([^"]+)"/g)
-        // fallback：匹配 > "text" or > \u201Ctext\u201D（in文引号）
+        // Fallback: match > "text" or > Chinese quotes
         if (!quoteMatches) {
           quoteMatches = quotesText.match(/> [\u201C""]([^\u201D""]+)[\u201D""]/g)
         }
@@ -890,7 +890,7 @@ const parseInterview = (text) => {
       }
     })
     
-    // extract采访summary
+    // Extract interview summary
     const summaryMatch = text.match(/### 采访summary与核心观点\n([\s\S]*?)$/)
     if (summaryMatch) {
       result.summary = summaryMatch[1].trim()
@@ -920,14 +920,14 @@ const parseQuickSearch = (text) => {
     const countMatch = text.match(/找to\s*(\d+)\s*item/)
     if (countMatch) result.count = parseInt(countMatch[1])
     
-    // extract相关事实 - completeextract，not限制count
+    // Extract related facts - complete extraction, no count limit
     const factsSection = text.match(/### 相关事实:\n([\s\S]*)$/)
     if (factsSection) {
       const lines = factsSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.facts = lines.map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
     }
     
-    // tryextractedgeinformation（if有）
+    // Try to extract edge information (if available)
     const edgesSection = text.match(/### 相关edge:\n([\s\S]*?)(?=\n###|$)/)
     if (edgesSection) {
       const lines = edgesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
@@ -940,7 +940,7 @@ const parseQuickSearch = (text) => {
       }).filter(Boolean)
     }
     
-    // tryextractnodeinformation（if有）
+    // Try to extract node information (if available)
     const nodesSection = text.match(/### 相关node:\n([\s\S]*?)(?=\n###|$)/)
     if (nodesSection) {
       const lines = nodesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
@@ -1064,16 +1064,16 @@ const InterviewDisplay = {
     
     const activeIndex = ref(0)
     const expandedAnswers = ref(new Set())
-    // 为each问题-回答对维护独立的platform选择status
+    // Maintain independent platform selection state for each Q&A pair
     const platformTabs = reactive({}) // { 'agentIdx-qIdx': 'twitter' | 'reddit' }
     
-    // get某问题的currentplatform选择
+    // Get current platform selection for a question
     const getPlatformTab = (agentIdx, qIdx) => {
       const key = `${agentIdx}-${qIdx}`
       return platformTabs[key] || 'twitter'
     }
     
-    // set某问题的platform选择
+    // Set platform selection for a question
     const setPlatformTab = (agentIdx, qIdx, platform) => {
       const key = `${agentIdx}-${qIdx}`
       platformTabs[key] = platform
@@ -1095,25 +1095,25 @@ const InterviewDisplay = {
       return text.substring(0, 400) + '...'
     }
     
-    // check是否为platform占位text
+    // Check if text is a platform placeholder
     const isPlaceholderText = (text) => {
       if (!text) return true
       const t = text.trim()
-      return t === '（该platformnot获得回复）' || t === '(该platformnot获得回复)' || t === '[无回复]'
+      return t === '(This platform did not receive a response)' || t === '(This platform did not receive a response)' || t === '[No response]'
     }
 
-    // tryby问题编号split回答
+    // Try to split answers by question number
     const splitAnswerByQuestions = (answerText, questionCount) => {
       if (!answerText || questionCount <= 0) return [answerText]
       if (isPlaceholderText(answerText)) return ['']
 
-      // support两种编号format：
-      // 1. "问题X：" or "问题X:" （in文format，after端newformat）
-      // 2. "1. " or "\n1. " （数字+点，oldformat兼容）
+      // Support two numbering formats:
+      // 1. "QuestionX:" (Chinese format, new backend format)
+      // 2. "1. " or "\n1. " (number+period, old format compatibility)
       let matches = []
       let match
 
-      // 优firsttry "问题X：" format
+      // First try "QuestionX:" format
       const cnPattern = /(?:^|[\r\n]+)问题(\d+)[：:]\s*/g
       while ((match = cnPattern.exec(answerText)) !== null) {
         matches.push({
@@ -1123,7 +1123,7 @@ const InterviewDisplay = {
         })
       }
 
-      // if没匹配to，fallbackto "数字." format
+      // If no match, fallback to "number." format
       if (matches.length === 0) {
         const numPattern = /(?:^|[\r\n]+)(\d+)\.\s+/g
         while ((match = numPattern.exec(answerText)) !== null) {
@@ -1135,7 +1135,7 @@ const InterviewDisplay = {
         }
       }
 
-      // if没有找to编号or只找to一，return整体
+      // If no numbers found or only one, return whole text
       if (matches.length <= 1) {
         const cleaned = answerText
           .replace(/^问题\d+[：:]\s*/, '')
@@ -1144,7 +1144,7 @@ const InterviewDisplay = {
         return [cleaned || answerText]
       }
 
-      // by编号extract各partial
+      // Extract parts by number
       const parts = []
       for (let i = 0; i < matches.length; i++) {
         const current = matches[i]
@@ -1165,7 +1165,7 @@ const InterviewDisplay = {
       return [answerText]
     }
     
-    // get某问题对应的回答
+    // Get answer for a specific question
     const getAnswerForQuestion = (interview, qIdx, platform) => {
       const answer = platform === 'twitter' ? interview.twitterAnswer : (interview.redditAnswer || interview.twitterAnswer)
       if (!answer || isPlaceholderText(answer)) return answer || ''
@@ -1173,21 +1173,21 @@ const InterviewDisplay = {
       const questionCount = interview.questions?.length || 1
       const answers = splitAnswerByQuestions(answer, questionCount)
 
-      // splitsuccessful且indexvalid
+      // Split successful and index is valid
       if (answers.length > 1 && qIdx < answers.length) {
         return answers[qIdx] || ''
       }
 
-      // splitfailed：第一问题returncomplete回答，其余returnempty
+      // Split failed: first question returns complete answer, rest return empty
       return qIdx === 0 ? answer : ''
     }
     
-    // check某问题是否有双platform回答（filter占位text）
+    // Check if a question has dual-platform answers (filter placeholder text)
     const hasMultiplePlatforms = (interview, qIdx) => {
       if (!interview.twitterAnswer || !interview.redditAnswer) return false
       const twitterAnswer = getAnswerForQuestion(interview, qIdx, 'twitter')
       const redditAnswer = getAnswerForQuestion(interview, qIdx, 'reddit')
-      // 两platform都有真实回答（非占位text）且contentnot同
+      // Both platforms have real answers (not placeholders) and content differs
       return !isPlaceholderText(twitterAnswer) && !isPlaceholderText(redditAnswer) && twitterAnswer !== redditAnswer
     }
     
@@ -1243,7 +1243,7 @@ const InterviewDisplay = {
           h('div', { class: 'reason-content' }, props.result.interviews[activeIndex.value].selectionReason)
         ]),
         
-        // Q&A Conversation Thread - 一问一答样式
+        // Q&A Conversation Thread - question-answer style
         h('div', { class: 'qa-thread' }, 
           (props.result.interviews[activeIndex.value]?.questions?.length > 0 
             ? props.result.interviews[activeIndex.value].questions 
@@ -1273,7 +1273,7 @@ const InterviewDisplay = {
                 h('div', { class: 'qa-content' }, [
                   h('div', { class: 'qa-answer-header' }, [
                     h('div', { class: 'qa-sender' }, interview?.name || 'Agent'),
-                    // 双platform切换by钮（onlyin有真实双platform回答时display）
+                    // Dual platform toggle button (only display when real dual-platform answers exist)
                     hasDualPlatform && h('div', { class: 'platform-switch' }, [
                       h('button', {
                         class: ['platform-btn', { active: currentPlatform === 'twitter' }],
@@ -1305,7 +1305,7 @@ const InterviewDisplay = {
                           .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                           .replace(/\n/g, '<br>')
                   }),
-                  // Expand/Collapse Button（占位textnotdisplay）
+                  // Expand/Collapse Button (placeholder text not displayed)
                   !isPlaceholder && answerText.length > 400 && h('button', {
                     class: 'expand-answer-btn',
                     onClick: () => toggleAnswer(expandKey)
@@ -1536,18 +1536,18 @@ const isFinalizing = computed(() => {
   return !isComplete.value && isPlanningDone.value && totalSections.value > 0 && completedSections.value >= totalSections.value
 })
 
-// current活跃的步骤（for顶部display）
+// Currently active step (for top display)
 const activeStep = computed(() => {
   const steps = workflowSteps.value
-  // 找tocurrent active 的步骤
+  // Find the currently active step
   const active = steps.find(s => s.status === 'active')
   if (active) return active
   
-  // if没有 active，returnfinally一 done 的步骤
+  // If no active step, return the last done step
   const doneSteps = steps.filter(s => s.status === 'done')
   if (doneSteps.length > 0) return doneSteps[doneSteps.length - 1]
   
-  // otherwisereturn第一步骤
+  // Otherwise return the first step
     return steps[0] || { noLabel: '--', title: 'Waiting to start', status: 'todo', meta: '' }
 })
 
@@ -1641,13 +1641,13 @@ const truncateText = (text, maxLen) => {
 const renderMarkdown = (content) => {
   if (!content) return ''
   
-  // 去掉开头的二级title（## xxx），becausesectiontitlealreadyinoutside层display
+  // Remove leading second-level heading (## xxx), because section title is already displayed in outer layer
   let processedContent = content.replace(/^##\s+.+\n+/, '')
   
-  // process代码chunk
+  // Process code blocks
   let html = processedContent.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
   
-  // process行within代码
+  // Process inline code
   html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
   
   // processtitle
@@ -1656,10 +1656,10 @@ const renderMarkdown = (content) => {
   html = html.replace(/^## (.+)$/gm, '<h3 class="md-h3">$1</h3>')
   html = html.replace(/^# (.+)$/gm, '<h2 class="md-h2">$1</h2>')
   
-  // process引用chunk
+  // Process blockquotes
   html = html.replace(/^> (.+)$/gm, '<blockquote class="md-quote">$1</blockquote>')
   
-  // processlist - support子list
+  // Process lists - support nested lists
   html = html.replace(/^(\s*)- (.+)$/gm, (match, indent, text) => {
     const level = Math.floor(indent.length / 2)
     return `<li class="md-li" data-level="${level}">${text}</li>`
@@ -1669,52 +1669,52 @@ const renderMarkdown = (content) => {
     return `<li class="md-oli" data-level="${level}">${text}</li>`
   })
 
-  // 包装无序list
+  // Wrap unordered lists
   html = html.replace(/(<li class="md-li"[^>]*>.*?<\/li>\s*)+/g, '<ul class="md-ul">$&</ul>')
-  // 包装有序list
+  // Wrap ordered lists
   html = html.replace(/(<li class="md-oli"[^>]*>.*?<\/li>\s*)+/g, '<ol class="md-ol">$&</ol>')
 
-  // Cleanuplistitem之between的allwhitespace
+  // Clean up whitespace between list items
   html = html.replace(/<\/li>\s+<li/g, '</li><li')
-  // Cleanupliststartlabelafter的whitespace
+  // Clean up whitespace after list start tags
   html = html.replace(/<ul class="md-ul">\s+/g, '<ul class="md-ul">')
   html = html.replace(/<ol class="md-ol">\s+/g, '<ol class="md-ol">')
-  // Cleanuplistendlabelbefore的whitespace
+  // Clean up whitespace before list end tags
   html = html.replace(/\s+<\/ul>/g, '</ul>')
   html = html.replace(/\s+<\/ol>/g, '</ol>')
   
-  // process粗体and斜体
+  // Process bold and italic
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
   html = html.replace(/_(.+?)_/g, '<em>$1</em>')
   
-  // process分隔线
+  // Process horizontal rules
   html = html.replace(/^---$/gm, '<hr class="md-hr">')
   
-  // processnewline - empty行变成segment落分隔，单newline变成 <br>
+  // Process line breaks - blank lines become paragraph separators, single line breaks become <br>
   html = html.replace(/\n\n/g, '</p><p class="md-p">')
   html = html.replace(/\n/g, '<br>')
   
-  // 包装insegment落in
+  // Wrap in paragraphs
   html = '<p class="md-p">' + html + '</p>'
   
-  // Cleanupemptysegment落
+  // Clean up empty paragraphs
   html = html.replace(/<p class="md-p"><\/p>/g, '')
   html = html.replace(/<p class="md-p">(<h[2-5])/g, '$1')
   html = html.replace(/(<\/h[2-5]>)<\/p>/g, '$1')
   html = html.replace(/<p class="md-p">(<ul|<ol|<blockquote|<pre|<hr)/g, '$1')
   html = html.replace(/(<\/ul>|<\/ol>|<\/blockquote>|<\/pre>)<\/p>/g, '$1')
-  // Cleanupchunk级元素beforeafter的 <br> label
+  // Clean up <br> tags before and after block-level elements
   html = html.replace(/<br>\s*(<ul|<ol|<blockquote)/g, '$1')
   html = html.replace(/(<\/ul>|<\/ol>|<\/blockquote>)\s*<br>/g, '$1')
-  // Cleanup <p><br> 紧跟chunk级元素的情况（extraempty行导致）
+  // Clean up <p><br> followed by block-level elements (caused by extra blank lines)
   html = html.replace(/<p class="md-p">(<br>\s*)+(<ul|<ol|<blockquote|<pre|<hr)/g, '$2')
-  // Cleanupconsecutive的 <br> label
+  // Clean up consecutive <br> tags
   html = html.replace(/(<br>\s*){2,}/g, '<br>')
-  // Cleanupchunk级元素after紧跟的segment落startlabelbefore的 <br>
+  // Clean up <br> before paragraph start tags following block-level elements
   html = html.replace(/(<\/ol>|<\/ul>|<\/blockquote>)<br>(<p|<div)/g, '$1$2')
 
-  // 修复非consecutive有序list的编号：当单item <ol> 被segment落content隔开时，保持编号递增
+  // Fix non-consecutive ordered list numbering: when single-item <ol> are separated by paragraph content, maintain incrementing numbers
   const tokens = html.split(/(<ol class="md-ol">(?:<li class="md-oli"[^>]*>[\s\S]*?<\/li>)+<\/ol>)/g)
   let olCounter = 0
   let inSequence = false
@@ -1779,8 +1779,8 @@ const getActionLabel = (action) => {
 
 const getLogLevelClass = (log) => {
   if (log.includes('ERROR') || log.includes('error')) return 'error'
-  if (log.includes('WARNING') || log.includes('警告')) return 'warning'
-  // INFO usedefault颜色，not标记为 success
+  if (log.includes('WARNING') || log.includes('warning')) return 'warning'
+  // INFO uses default color, not marked as success
   return ''
 }
 
@@ -1813,7 +1813,7 @@ const fetchAgentLog = async () => {
           if (log.action === 'section_complete') {
             if (log.details?.content) {
               generatedSections.value[log.section_index] = log.details.content
-              // 自动展开刚generate的section
+              // Auto-expand just generated section
               expandedContent.value.add(log.section_index - 1)
               currentSectionIndex.value = null
             }
@@ -1821,10 +1821,10 @@ const fetchAgentLog = async () => {
           
           if (log.action === 'report_complete') {
             isComplete.value = true
-            currentSectionIndex.value = null  // ensure清除 loading status
+            currentSectionIndex.value = null  // Ensure loading status is cleared
             emit('update-status', 'completed')
             stopPolling()
-            // 滚动logic统一inloopendafter的 nextTick inprocess
+            // Scroll logic unified in loop end nextTick handler
           }
           
           if (log.action === 'report_start') {
@@ -1836,7 +1836,7 @@ const fetchAgentLog = async () => {
         
         nextTick(() => {
           if (rightPanel.value) {
-            // iftaskCompleted，滚动to顶部；otherwise滚动to底部跟随最newlog
+            // If task complete, scroll to top; otherwise scroll to bottom to follow latest log
             if (isComplete.value) {
               rightPanel.value.scrollTop = 0
             } else {
@@ -1851,17 +1851,17 @@ const fetchAgentLog = async () => {
   }
 }
 
-// extractfinal答案content - from LLM response inextractsectioncontent
+// Extract final answer content - extract section content from LLM response
 const extractFinalContent = (response) => {
   if (!response) return null
   
-  // tryextract <final_answer> labelwithin的content
+  // Try to extract content within <final_answer> tags
   const finalAnswerTagMatch = response.match(/<final_answer>([\s\S]*?)<\/final_answer>/)
   if (finalAnswerTagMatch) {
     return finalAnswerTagMatch[1].trim()
   }
   
-  // try找 Final Answer: after面的content（support多种format）
+  // Try to find content after Final Answer: (support multiple formats)
   // format1: Final Answer:\n\ncontent
   // format2: Final Answer: content
   const finalAnswerMatch = response.match(/Final\s*Answer:\s*\n*([\s\S]*)$/i)
@@ -1869,21 +1869,21 @@ const extractFinalContent = (response) => {
     return finalAnswerMatch[1].trim()
   }
   
-  // try找 final答案: after面的content
+  // Try to find content after final answer:
   const chineseFinalMatch = response.match(/final答案[:：]\s*\n*([\s\S]*)$/i)
   if (chineseFinalMatch) {
     return chineseFinalMatch[1].trim()
   }
   
-  // if以 ## or # or > 开头，can能是直接的 markdown content
+  // If starts with ## or # or >, might be direct markdown content
   const trimmedResponse = response.trim()
   if (trimmedResponse.match(/^[#>]/)) {
     return trimmedResponse
   }
   
-  // ifcontent较长且containmarkdownformat，tryremove思考processafterreturn
+  // If content is long enough and contains markdown format, try to remove thinking process and return
   if (response.length > 300 && (response.includes('**') || response.includes('>'))) {
-    // remove Thought: 开头的思考process
+  // Remove Thought: prefix thinking process
     const thoughtMatch = response.match(/^Thought:[\s\S]*?(?=\n\n[^T]|\n\n$)/i)
     if (thoughtMatch) {
       const afterThought = response.substring(thoughtMatch[0].length).trim()
@@ -2228,7 +2228,7 @@ watch(() => props.reportId, (newId) => {
 .section-number {
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
-  color: #9CA3AF; /* 深灰色，not随status变化 */
+  color: #9CA3AF; /* Dark gray, does not change with status */
   font-weight: 500;
 }
 
@@ -3670,7 +3670,7 @@ watch(() => props.reportId, (newId) => {
   overflow: hidden;
 }
 
-/* Selection Reason - 选择理由 */
+/* Selection Reason */
 :deep(.interview-display .selection-reason) {
   background: #F8FAFC;
   border: 1px solid #E2E8F0;
@@ -4869,7 +4869,7 @@ watch(() => props.reportId, (newId) => {
   border-radius: 4px;
 }
 
-/* Console Logs - 与 Step3Simulation.vue 保持一致 */
+/* Console Logs - consistent with Step3Simulation.vue */
 .console-logs {
   background: #000;
   color: #DDD;

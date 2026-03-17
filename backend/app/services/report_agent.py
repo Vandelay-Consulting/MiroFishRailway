@@ -129,7 +129,7 @@ class ReportLogger:
         )
 
     def log_planning_complete(self, outline_dict: Dict[str, Any]):
-        """recordOutline planning completed"""
+        """Record outline planning completed"""
         self.log(
             action="planning_complete",
             stage="planning",
@@ -201,7 +201,7 @@ class ReportLogger:
             details={
                 "iteration": iteration,
                 "tool_name": tool_name,
-                "result": result,  # completeresult,nottruncate
+                "result": result,  # Complete result, not truncated
                 "result_length": len(result),
                 "message": f"Tool {tool_name} returned result",
             },
@@ -239,7 +239,7 @@ class ReportLogger:
         content: str,
         tool_calls_count: int,
     ):
-        """recordsectioncontentgeneration completed(onlyrecordcontent,not代表整sectionscomplete)"""
+        """Record section content generation completed (only records content, does not mean the entire section is complete)"""
         self.log(
             action="section_content",
             stage="generating",
@@ -257,9 +257,9 @@ class ReportLogger:
         self, section_title: str, section_index: int, full_content: str
     ):
         """
-        recordsectiongeneration completed
+        Record section generation completed
 
-        before端应监听此log来determine一sections是否真正complete,并getcompletecontent
+        The frontend should listen for this log to determine if a section is truly complete, and get the complete content
         """
         self.log(
             action="section_complete",
@@ -274,7 +274,7 @@ class ReportLogger:
         )
 
     def log_report_complete(self, total_sections: int, total_time_seconds: float):
-        """recordReport generation completed"""
+        """Record report generation completed"""
         self.log(
             action="report_complete",
             stage="completed",
@@ -1119,7 +1119,7 @@ class ReportAgent:
         # Support both {"name": ..., "parameters": ...} and {"tool": ..., "params": ...} key names
         tool_name = data.get("name") or data.get("tool")
         if tool_name and tool_name in self.VALID_TOOL_NAMES:
-            # 统一key名为 name / parameters
+            # Normalize key names to name / parameters
             if "tool" in data:
                 data["name"] = data.pop("tool")
             if "params" in data and "parameters" not in data:
@@ -1129,7 +1129,7 @@ class ReportAgent:
 
     def _get_tools_description(self) -> str:
         """Generate tool description text"""
-        desc_parts = ["can用tool："]
+        desc_parts = ["Available tools:"]
         for name, tool in self.tools.items():
             params_desc = ", ".join(
                 [f"{k}: {v}" for k, v in tool["parameters"].items()]
@@ -1143,15 +1143,15 @@ class ReportAgent:
         self, progress_callback: Optional[Callable] = None
     ) -> ReportOutline:
         """
-        规划reportoutline
+        Plan the report outline
 
-        UseLLManalyzeSimulationrequirement,规划report的directory结构
+        Use LLM to analyze simulation requirements and plan the report directory structure
 
         Args:
-            progress_callback: progresscallback function
+            progress_callback: Progress callback function
 
         Returns:
-            ReportOutline: reportoutline
+            ReportOutline: Report outline
         """
         logger.info("Started planning report outline...")
 
@@ -1233,28 +1233,28 @@ class ReportAgent:
         section_index: int = 0,
     ) -> str:
         """
-        UseReACT模式generate单sectionscontent
+        Use ReACT mode to generate single section content
 
-        ReACTloop：
-        1. Thought(思考)- analyze需要什么information
+        ReACT loop:
+        1. Thought - Analyze what information is needed
         2. Action(action)- Calling toolgetinformation
-        3. Observation(观察)- analyzetoolreturned result
-        4. duplicate直toinformation足够or达tomaximumtimes数
-        5. Final Answer(Final answer)- generatesectioncontent
+        3. Observation - Analyze tool returned results
+        4. Repeat until information is sufficient or max iterations reached
+        5. Final Answer - Generate section content
 
         Args:
-            section: 要generate的section
-            outline: completeoutline
-            previous_sections: beforesection的content(for保持coherence)
-            progress_callback: progresscallback
-            section_index: sectionindex(forlogrecord)
+            section: The section to generate
+            outline: Complete outline
+            previous_sections: Previous section content (for maintaining coherence)
+            progress_callback: Progress callback
+            section_index: Section index (for logging)
 
         Returns:
-            sectioncontent(Markdownformat)
+            Section content (Markdown format)
         """
         logger.info(f"ReACT generating section: {section.title}")
 
-        # recordsectionstartlog
+        # Record section start log
         if self.report_logger:
             self.report_logger.log_section_start(section.title, section_index)
 
@@ -1266,11 +1266,11 @@ class ReportAgent:
             tools_description=self._get_tools_description(),
         )
 
-        # build用户prompt - eachCompletedsection各pass inmaximum4000字
+        # Build user prompt - each completed section passes in max 4000 characters
         if previous_sections:
             previous_parts = []
             for sec in previous_sections:
-                # eachsections最多4000字
+                # Each section max 4000 characters
                 truncated = sec[:4000] + "..." if len(sec) > 4000 else sec
                 previous_parts.append(truncated)
             previous_content = "\n\n---\n\n".join(previous_parts)
@@ -1290,8 +1290,8 @@ class ReportAgent:
         # ReACT loop
         tool_calls_count = 0
         max_iterations = 5  # Max iteration rounds
-        min_tool_calls = 3  # 最少tool calltimes数
-        conflict_retries = 0  # tool call与Final Answersimultaneously出现的consecutiveconflicttimes数
+        min_tool_calls = 3  # Minimum tool call count
+        conflict_retries = 0  # Consecutive conflict count when tool call and Final Answer appear simultaneously
         used_tools = set()  # Track used tool names
         all_tools = {
             "insight_forge",
@@ -1300,9 +1300,9 @@ class ReportAgent:
             "interview_agents",
         }
 
-        # reportcontext,forInsightForge的子问题generate
+        # Report context, for InsightForge sub-question generation
         report_context = (
-            f"sectiontitle: {section.title}\nSimulationrequirement: {self.simulation_requirement}"
+            f"Section title: {section.title}\nSimulation requirement: {self.simulation_requirement}"
         )
 
         for iteration in range(max_iterations):
@@ -1318,12 +1318,12 @@ class ReportAgent:
                 messages=messages, temperature=0.5, max_tokens=4096
             )
 
-            # check LLM Returns是否为 None(API exceptionorcontent为empty)
+            # Check if LLM returns None (API exception or empty content)
             if response is None:
                 logger.warning(f"section {section.title} iteration: LLM returned None")
-                # ifstill有iterationtimes数,addmessage并retry
+                # If there are still iteration attempts, add message and retry
                 if iteration < max_iterations - 1:
-                    messages.append({"role": "assistant", "content": "(response为empty)"})
+                    messages.append({"role": "assistant", "content": "(Response was empty)"})
                     messages.append(
                         {
                             "role": "user",
@@ -1331,17 +1331,17 @@ class ReportAgent:
                         }
                     )
                     continue
-                # finally一timesiterationalsoReturns None,跳出loop进入强制收尾
+                # Last iteration also returned None, break loop to enter forced completion
                 break
 
             logger.debug(f"LLM response: {response[:200]}...")
 
-            # parse一times,复用result
+            # Parse once, reuse result
             tool_calls = self._parse_tool_calls(response)
             has_tool_calls = bool(tool_calls)
             has_final_answer = "Final Answer:" in response
 
-            # ── conflictprocess：LLM simultaneouslyoutput了tool calland Final Answer ──
+            # ── Conflict handling: LLM simultaneously output tool call and Final Answer ──
             if has_tool_calls and has_final_answer:
                 conflict_retries += 1
                 logger.warning(
@@ -1366,7 +1366,7 @@ class ReportAgent:
                     )
                     continue
                 else:
-                    # 第三times：降级process,truncatetofirst tool call,强制execute
+                    # Third time: downgrade handling, truncate to first tool call, force execute
                     logger.warning(
                         f"section {section.title}: consecutive {conflict_retries} conflicts, "
                         "degrading to execute truncated first tool call"
@@ -1392,7 +1392,7 @@ class ReportAgent:
 
             # ── Case 1: LLM output Final Answer ──
             if has_final_answer:
-                # tool calltimes数not足,拒绝并要求continue调tool
+                # Tool call count insufficient, reject and request to continue calling tools
                 if tool_calls_count < min_tool_calls:
                     messages.append({"role": "assistant", "content": response})
                     unused_tools = all_tools - used_tools
@@ -1428,9 +1428,9 @@ class ReportAgent:
                     )
                 return final_answer
 
-            # ── 情况2：LLM tried to calltool ──
+            # ── Case 2: LLM tried to call a tool ──
             if has_tool_calls:
-                # toolquotaalreadyexhausted → 明确告知,要求output Final Answer
+                # Tool quota already exhausted → clearly inform, request Final Answer output
                 if tool_calls_count >= self.MAX_TOOL_CALLS_PER_SECTION:
                     messages.append({"role": "assistant", "content": response})
                     messages.append(
@@ -1444,7 +1444,7 @@ class ReportAgent:
                     )
                     continue
 
-                # 只executefirst tool call
+                # Only execute first tool call
                 call = tool_calls[0]
                 if len(tool_calls) > 1:
                     logger.info(
@@ -1502,11 +1502,11 @@ class ReportAgent:
                 )
                 continue
 
-            # ── 情况3：既没有tool call,also没有 Final Answer ──
+            # ── Case 3: Neither tool call nor Final Answer ──
             messages.append({"role": "assistant", "content": response})
 
             if tool_calls_count < min_tool_calls:
-                # tool calltimes数not足,recommendnot用过的tool
+                # Tool call count insufficient, recommend unused tools
                 unused_tools = all_tools - used_tools
                 unused_hint = (
                     f"(These tools have not been used yet, recommended to try: {', '.join(unused_tools)})"
@@ -1526,8 +1526,8 @@ class ReportAgent:
                 )
                 continue
 
-            # tool callalready足够,LLM output了contentbut没带 "Final Answer:" before缀
-            # 直接将这segmentcontent作为final答案,notthenempty转
+            # Tool calls already sufficient, LLM output content but without "Final Answer:" prefix
+            # Directly use this content as the final answer, no more idle spinning
             logger.info(
                 f"section {section.title} not detected Final Answer prefix, directly adopting LLM output as final content (tool call: {tool_calls_count} times)"
             )
@@ -1542,7 +1542,7 @@ class ReportAgent:
                 )
             return final_answer
 
-        # reached max iterations,forcing generationcontent
+        # Reached max iterations, forcing content generation
         logger.warning(
             f"section {section.title} reached max iterations,forcing generation"
         )
@@ -1550,7 +1550,7 @@ class ReportAgent:
 
         response = self.llm.chat(messages=messages, temperature=0.5, max_tokens=4096)
 
-        # checkwhen forcing completion LLM Returns是否为 None
+        # Check if LLM returns None when forcing completion
         if response is None:
             logger.error(
                 f"section {section.title} when forcing completion LLM returned None,using default error message"
@@ -1561,7 +1561,7 @@ class ReportAgent:
         else:
             final_answer = response
 
-        # recordsectioncontentgeneration completedlog
+        # Record section content generation completed log
         if self.report_logger:
             self.report_logger.log_section_content(
                 section_title=section.title,
@@ -1578,29 +1578,29 @@ class ReportAgent:
         report_id: Optional[str] = None,
     ) -> Report:
         """
-        generatecompletereport(分section实时output)
+        Generate complete report (section-by-section real-time output)
 
-        eachsectionsgeneration completedafter立即savetofile夹,not需要wait整reportcomplete。
-        file结构：
+        After each section generation is completed, immediately save to folder, no need to wait for entire report completion.
+        File structure:
         reports/{report_id}/
-            meta.json       - report元information
+            meta.json       - Report metadata
             outline.json    - reportoutline
             progress.json   - generateprogress
-            section_01.md   - 第1section
-            section_02.md   - 第2section
+            section_01.md   - Section 1
+            section_02.md   - Section 2
             ...
             full_report.md  - completereport
 
         Args:
             progress_callback: progresscallback function (stage, progress, message)
-            report_id: reportID(optional,ifnot传then自动generate)
+            report_id: Report ID (optional, auto-generated if not provided)
 
         Returns:
             Report: completereport
         """
         import uuid
 
-        # if没有pass in report_id,then自动generate
+        # If no report_id passed in, auto-generate one
         if not report_id:
             report_id = f"report_{uuid.uuid4().hex[:12]}"
         start_time = datetime.now()
@@ -1614,14 +1614,14 @@ class ReportAgent:
             created_at=datetime.now().isoformat(),
         )
 
-        # Completed的sectiontitlelist(forprogress追踪)
+        # Completed section title list (for progress tracking)
         completed_section_titles = []
 
         try:
             # Initialization: create report folder and save initial state
             ReportManager._ensure_report_folder(report_id)
 
-            # initializelogrecord器(结构化log agent_log.jsonl)
+            # Initialize log recorder (structured log agent_log.jsonl)
             self.report_logger = ReportLogger(report_id)
             self.report_logger.log_start(
                 simulation_id=self.simulation_id,
@@ -1629,7 +1629,7 @@ class ReportAgent:
                 simulation_requirement=self.simulation_requirement,
             )
 
-            # initialize控制台logrecord器(console_log.txt)
+            # Initialize console log recorder (console_log.txt)
             self.console_logger = ReportConsoleLogger(report_id)
 
             ReportManager.update_progress(
@@ -1832,19 +1832,19 @@ class ReportAgent:
         self, message: str, chat_history: List[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
-        与Report Agent conversation
+        Chat with Report Agent
 
-        in对话inAgentcan以自主call检索tool来回答问题
+        In the conversation, Agent can autonomously call retrieval tools to answer questions
 
         Args:
             message: User message
-            chat_history: 对话历史
+            chat_history: Conversation history
 
         Returns:
             {
-                "response": "Agent回复",
-                "tool_calls": [call的toollist],
-                "sources": [information来source]
+                "response": "Agent reply",
+                "tool_calls": [List of tools called],
+                "sources": [Information sources]
             }
         """
         logger.info(f"Report Agent conversation: {message[:50]}...")
@@ -1856,7 +1856,7 @@ class ReportAgent:
         try:
             report = ReportManager.get_report_by_simulation(self.simulation_id)
             if report and report.markdown_content:
-                # 限制reportlength,避免context过长
+                # Limit report length to avoid context being too long
                 report_content = report.markdown_content[:15000]
                 if len(report.markdown_content) > 15000:
                     report_content += "\n\n... [Report content truncated] ..."
@@ -1873,13 +1873,13 @@ class ReportAgent:
         messages = [{"role": "system", "content": system_prompt}]
 
         # Add chat history
-        for h in chat_history[-10:]:  # 限制历史length
+        for h in chat_history[-10:]:  # Limit history length
             messages.append(h)
 
         # Add user message
         messages.append({"role": "user", "content": message})
 
-        # ReACT loop(简化版)
+        # ReACT loop (simplified version)
         tool_calls_made = []
         max_iterations = 2  # Reduce iteration count
 
@@ -1890,7 +1890,7 @@ class ReportAgent:
             tool_calls = self._parse_tool_calls(response)
 
             if not tool_calls:
-                # 没有tool call,直接Returnsresponse
+                # No tool call, directly return response
                 clean_response = re.sub(
                     r"<tool_call>.*?</tool_call>", "", response, flags=re.DOTALL
                 )
@@ -1905,9 +1905,9 @@ class ReportAgent:
                     ],
                 }
 
-            # executetool call(限制count)
+            # Execute tool call (limit count)
             tool_results = []
-            for call in tool_calls[:1]:  # each轮最多execute1timestool call
+            for call in tool_calls[:1]:  # Max 1 tool call per round
                 if len(tool_calls_made) >= self.MAX_TOOL_CALLS_PER_CHAT:
                     break
                 result = self._execute_tool(call["name"], call.get("parameters", {}))
@@ -1928,7 +1928,7 @@ class ReportAgent:
                 {"role": "user", "content": observation + CHAT_OBSERVATION_SUFFIX}
             )
 
-        # 达tomaximumiteration,getfinalresponse
+        # Reached max iterations, get final response
         final_response = self.llm.chat(messages=messages, temperature=0.5)
 
         # Clean response
@@ -1950,16 +1950,16 @@ class ReportManager:
     """
     reportManager
 
-    负责report的persistencestoreand检索
+    Responsible for persistent storage and retrieval of reports
 
-    file结构(分sectionoutput)：
+    File structure (section-by-section output):
     reports/
       {report_id}/
-        meta.json          - report元informationandstatus
+        meta.json          - Report metadata and status
         outline.json       - reportoutline
         progress.json      - generateprogress
-        section_01.md      - 第1section
-        section_02.md      - 第2section
+        section_01.md      - Section 1
+        section_02.md      - Section 2
         ...
         full_report.md     - completereport
     """
@@ -2024,21 +2024,21 @@ class ReportManager:
     @classmethod
     def get_console_log(cls, report_id: str, from_line: int = 0) -> Dict[str, Any]:
         """
-        get控制台logcontent
+        Get console log content
 
-        这是reportgenerateprocessin的控制台outputlog(INFO、WARNING等),
-        与 agent_log.jsonl 的结构化lognot同。
+        These are console output logs (INFO, WARNING, etc.) during report generation process,
+        different from the structured logs in agent_log.jsonl.
 
         Args:
             report_id: reportID
-            from_line: from第几行startread(for增量get,0 表示from头start)
+            from_line: Starting line to read from (for incremental fetching, 0 means from beginning)
 
         Returns:
             {
-                "logs": [log行list],
-                "total_lines": 总行数,
-                "from_line": 起始行号,
-                "has_more": 是否still有更多log
+                "logs": [List of log lines],
+                "total_lines": Total line count,
+                "from_line": Starting line number,
+                "has_more": Whether there are more logs
             }
         """
         log_path = cls._get_console_log_path(report_id)
@@ -2053,26 +2053,26 @@ class ReportManager:
             for i, line in enumerate(f):
                 total_lines = i + 1
                 if i >= from_line:
-                    # 保留原始log行,去掉末尾newline符
+                    # Keep original log line, remove trailing newline
                     logs.append(line.rstrip("\n\r"))
 
         return {
             "logs": logs,
             "total_lines": total_lines,
             "from_line": from_line,
-            "has_more": False,  # alreadyreadto末尾
+            "has_more": False,  # Already read to end
         }
 
     @classmethod
     def get_console_log_stream(cls, report_id: str) -> List[str]:
         """
-        getcomplete的控制台log(一times性get全部)
+        Get complete console log (fetch all at once)
 
         Args:
             report_id: reportID
 
         Returns:
-            log行list
+            List of log lines
         """
         result = cls.get_console_log(report_id, from_line=0)
         return result["logs"]
@@ -2084,14 +2084,14 @@ class ReportManager:
 
         Args:
             report_id: reportID
-            from_line: from第几行startread(for增量get,0 表示from头start)
+            from_line: Starting line to read from (for incremental fetching, 0 means from beginning)
 
         Returns:
             {
-                "logs": [logitem目list],
-                "total_lines": 总行数,
-                "from_line": 起始行号,
-                "has_more": 是否still有更多log
+                "logs": [List of log items],
+                "total_lines": Total line count,
+                "from_line": Starting line number,
+                "has_more": Whether there are more logs
             }
         """
         log_path = cls._get_agent_log_path(report_id)
@@ -2117,19 +2117,19 @@ class ReportManager:
             "logs": logs,
             "total_lines": total_lines,
             "from_line": from_line,
-            "has_more": False,  # alreadyreadto末尾
+            "has_more": False,  # Already read to end
         }
 
     @classmethod
     def get_agent_log_stream(cls, report_id: str) -> List[Dict[str, Any]]:
         """
-        getcomplete的 Agent log(for一times性get全部)
+        Get complete Agent log (fetch all at once)
 
         Args:
             report_id: reportID
 
         Returns:
-            logitem目list
+            List of log items
         """
         result = cls.get_agent_log(report_id, from_line=0)
         return result["logs"]
@@ -2153,21 +2153,21 @@ class ReportManager:
         cls, report_id: str, section_index: int, section: ReportSection
     ) -> str:
         """
-        save单sections
+        Save a single section
 
-        ineachsectionsgeneration completedafter立即call,实现分sectionoutput
+        Called immediately after each section generation is completed, enabling section-by-section output
 
         Args:
             report_id: reportID
             section_index: sectionindex(from1start)
-            section: section对象
+            section: Section object
 
         Returns:
-            save的filepath
+            Saved file path
         """
         cls._ensure_report_folder(report_id)
 
-        # buildsectionMarkdowncontent - Cleanupcan能存in的duplicatetitle
+        # Build section Markdown content - Clean up possible duplicate titles
         cleaned_content = cls._clean_section_content(section.content, section.title)
         md_content = f"## {section.title}\n\n"
         if cleaned_content:
@@ -2187,15 +2187,15 @@ class ReportManager:
         """
         Cleanupsectioncontent
 
-        1. removecontent开头与sectiontitleduplicate的Markdowntitle行
-        2. 将all ### 及以underlevel的title转换为粗体text
+        1. Remove Markdown heading lines at the beginning of content that duplicate the section title
+        2. Convert all ### and lower level headings to bold text
 
         Args:
-            content: 原始content
+            content: Original content
             section_title: sectiontitle
 
         Returns:
-            Cleanupafter的content
+            Cleaned content
         """
         import re
 
@@ -2217,7 +2217,7 @@ class ReportManager:
                 level = len(heading_match.group(1))
                 title_text = heading_match.group(2).strip()
 
-                # check是否是与sectiontitleduplicate的title(skipbefore5行within的duplicate)
+                # Check if this is a heading that duplicates the section title (skip duplicates within the first 5 lines)
                 if i < 5:
                     if title_text == section_title or title_text.replace(
                         " ", ""
@@ -2225,13 +2225,13 @@ class ReportManager:
                         skip_next_empty = True
                         continue
 
-                # 将alllevel的title(#, ##, ###, ####等)转换为粗体
-                # becausesectiontitle由systemadd,contentinnot应有任何title
+                # Convert all heading levels (#, ##, ###, #### etc.) to bold
+                # Because section titles are added by the system, content should not have any headings
                 cleaned_lines.append(f"**{title_text}**")
-                cleaned_lines.append("")  # addempty行
+                cleaned_lines.append("")  # Add empty line
                 continue
 
-            # ifon一行是被skip的title,且current行为empty,alsoskip
+            # If previous line was a skipped title, and current line is empty, also skip
             if skip_next_empty and stripped == "":
                 skip_next_empty = False
                 continue
@@ -2295,9 +2295,9 @@ class ReportManager:
     @classmethod
     def get_generated_sections(cls, report_id: str) -> List[Dict[str, Any]]:
         """
-        getalreadygenerate的sectionlist
+        Get list of already generated sections
 
-        Returnsallsaved的sectionfileinformation
+        Returns information about all saved section files
         """
         folder = cls._get_report_folder(report_id)
 
@@ -2311,7 +2311,7 @@ class ReportManager:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
 
-                # fromfile名parsesectionindex
+                # Parse section index from filename
                 parts = filename.replace(".md", "").split("_")
                 section_index = int(parts[1])
 
@@ -2328,9 +2328,9 @@ class ReportManager:
     @classmethod
     def assemble_full_report(cls, report_id: str, outline: ReportOutline) -> str:
         """
-        组装completereport
+        Assemble the complete report
 
-        fromsaved的sectionfile组装completereport,并进行titleCleanup
+        Assemble complete report from saved section files, and perform title cleanup
         """
         folder = cls._get_report_folder(report_id)
 
@@ -2339,7 +2339,7 @@ class ReportManager:
         md_content += f"> {outline.summary}\n\n"
         md_content += f"---\n\n"
 
-        # by顺序readallsectionfile
+        # Read all section files in order
         sections = cls.get_generated_sections(report_id)
         for section_info in sections:
             md_content += section_info["content"]
@@ -2360,16 +2360,16 @@ class ReportManager:
         """
         afterprocessReport content
 
-        1. removeduplicate的title
-        2. 保留report主title(#)andsectiontitle(##),remove其他level的title(###, ####等)
-        3. Cleanupextra的empty行and分隔线
+        1. Remove duplicate headings
+        2. Keep report main title (#) and section titles (##), remove other heading levels (###, ####, etc.)
+        3. Clean up extra blank lines and separators
 
         Args:
-            content: 原始Report content
+            content: Original report content
             outline: reportoutline
 
         Returns:
-            processafter的content
+            Processed content
         """
         import re
 
@@ -2377,7 +2377,7 @@ class ReportManager:
         processed_lines = []
         prev_was_heading = False
 
-        # collectoutlinein的allsectiontitle
+        # Collect all section titles from the outline
         section_titles = set()
         for section in outline.sections:
             section_titles.add(section.title)
@@ -2394,7 +2394,7 @@ class ReportManager:
                 level = len(heading_match.group(1))
                 title = heading_match.group(2).strip()
 
-                # check是否是duplicatetitle(inconsecutive5行within出现相同content的title)
+                # Check if this is a duplicate heading (same content heading appearing within 5 consecutive lines)
                 is_duplicate = False
                 for j in range(max(0, len(processed_lines) - 5), len(processed_lines)):
                     prev_line = processed_lines[j].strip()
@@ -2414,7 +2414,7 @@ class ReportManager:
 
                 # Heading level handling:
                 # - # (level=1) Only keep report main title
-                # - ## (level=2) 保留sectiontitle
+                # - ## (level=2) Keep section titles
                 # - ### and below (level>=3) Convert to bold text
 
                 if level == 1:
@@ -2423,7 +2423,7 @@ class ReportManager:
                         processed_lines.append(line)
                         prev_was_heading = True
                     elif title in section_titles:
-                        # sectiontitleerrorUse了#,修正为##
+                        # Section title incorrectly used #, correct to ##
                         processed_lines.append(f"## {title}")
                         prev_was_heading = True
                     else:
@@ -2433,11 +2433,11 @@ class ReportManager:
                         prev_was_heading = False
                 elif level == 2:
                     if title in section_titles or title == outline.title:
-                        # 保留sectiontitle
+                        # Keep section title
                         processed_lines.append(line)
                         prev_was_heading = True
                     else:
-                        # 非section的二级title转为粗体
+                        # Non-section second-level heading converted to bold
                         processed_lines.append(f"**{title}**")
                         processed_lines.append("")
                         prev_was_heading = False
@@ -2467,7 +2467,7 @@ class ReportManager:
 
             i += 1
 
-        # Cleanupconsecutive的多empty行(保留最多2)
+        # Clean up consecutive multiple blank lines (keep at most 2)
         result_lines = []
         empty_count = 0
         for line in processed_lines:
@@ -2534,7 +2534,7 @@ class ReportManager:
                 sections=sections,
             )
 
-        # ifmarkdown_content为empty,tryfromfull_report.mdread
+        # If markdown_content is empty, try reading from full_report.md
         markdown_content = data.get("markdown_content", "")
         if not markdown_content:
             full_report_path = cls._get_report_markdown_path(report_id)
@@ -2607,7 +2607,7 @@ class ReportManager:
 
     @classmethod
     def delete_report(cls, report_id: str) -> bool:
-        """deletereport(整file夹)"""
+        """Delete report (entire folder)"""
         import shutil
 
         folder_path = cls._get_report_folder(report_id)
