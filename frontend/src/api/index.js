@@ -1,14 +1,14 @@
 import axios from 'axios'
 
-// createaxiosInstance
+// Create axios instance
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  timeout: 300000, // 5分钟Timeout（ontologygeneratecan能需要较长时between）
+  timeout: 300000, // 5 minute timeout (ontology generation may take a long time)
   // Don't set default Content-Type, let each request set its own
   // to support multipart/form-data uploads
 })
 
-// request拦截器
+// Request interceptor
 service.interceptors.request.use(
   config => {
     return config
@@ -19,12 +19,12 @@ service.interceptors.request.use(
   }
 )
 
-// response拦截器（容错retrymechanism）
+// Response interceptor (with fault-tolerant retry mechanism)
 service.interceptors.response.use(
   response => {
     const res = response.data
     
-    // ifreturn的status码not是success，then抛出error
+    // If returned status code is not success, throw error
     if (!res.success && res.success !== undefined) {
       console.error('API Error:', res.error || res.message || 'Unknown error')
       return Promise.reject(new Error(res.error || res.message || 'Error'))
@@ -35,12 +35,12 @@ service.interceptors.response.use(
   error => {
     console.error('Response error:', error)
     
-    // processTimeout
+    // Handle timeout
     if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
       console.error('Request timeout')
     }
     
-    // process网络error
+    // Handle network error
     if (error.message === 'Network Error') {
       console.error('Network error - please check your connection')
     }
@@ -49,7 +49,7 @@ service.interceptors.response.use(
   }
 )
 
-// 带retry的requestfunction
+// Request function with retry
 export const requestWithRetry = async (requestFn, maxRetries = 3, delay = 1000) => {
   for (let i = 0; i < maxRetries; i++) {
     try {

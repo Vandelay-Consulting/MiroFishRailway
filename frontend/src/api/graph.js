@@ -1,8 +1,8 @@
 import service, { requestWithRetry } from './index'
 
 /**
- * generateontology（on传documentandSimulationrequirement）
- * @param {Object} data - containfiles, simulation_requirement, project_name等
+ * Generate ontology (upload documents and simulation requirement)
+ * @param {Object} formData - contains files, simulation_requirement, project_name, etc.
  * @returns {Promise}
  */
 export function generateOntology(formData) {
@@ -20,7 +20,7 @@ export function generateOntology(formData) {
 
 /**
  * Build graph
- * @param {Object} data - containproject_id, graph_name等
+ * @param {Object} data - contains project_id, graph_name, etc.
  * @returns {Promise}
  */
 export function buildGraph(data) {
@@ -34,7 +34,7 @@ export function buildGraph(data) {
 }
 
 /**
- * querytaskstatus
+ * Query task status
  * @param {String} taskId - Task ID
  * @returns {Promise}
  */
@@ -58,7 +58,7 @@ export function getGraphData(graphId) {
 }
 
 /**
- * getprojectinformation
+ * Get project information
  * @param {String} projectId - Project ID
  * @returns {Promise}
  */

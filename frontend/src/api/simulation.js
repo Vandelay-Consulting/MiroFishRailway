@@ -1,7 +1,7 @@
 import service, { requestWithRetry } from './index'
 
 /**
- * createSimulation
+ * Create simulation
  * @param {Object} data - { project_id, graph_id?, enable_twitter?, enable_reddit? }
  */
 export const createSimulation = (data) => {
@@ -9,7 +9,7 @@ export const createSimulation = (data) => {
 }
 
 /**
- * 准备Simulationenvironment（asynctask）
+ * Prepare simulation environment (async task)
  * @param {Object} data - { simulation_id, entity_types?, use_llm_for_profiles?, parallel_profile_count?, force_regenerate? }
  */
 export const prepareSimulation = (data) => {
@@ -17,7 +17,7 @@ export const prepareSimulation = (data) => {
 }
 
 /**
- * query准备taskprogress
+ * Query preparation task progress
  * @param {Object} data - { task_id?, simulation_id? }
  */
 export const getPrepareStatus = (data) => {
@@ -33,7 +33,7 @@ export const getSimulation = (simulationId) => {
 }
 
 /**
- * getSimulation的 Agent Profiles
+ * Get simulation agent profiles
  * @param {string} simulationId
  * @param {string} platform - 'reddit' | 'twitter'
  */
@@ -42,7 +42,7 @@ export const getSimulationProfiles = (simulationId, platform = 'reddit') => {
 }
 
 /**
- * 实时getgeneratein的 Agent Profiles
+ * Get agent profiles in real-time during generation
  * @param {string} simulationId
  * @param {string} platform - 'reddit' | 'twitter'
  */
@@ -59,17 +59,17 @@ export const getSimulationConfig = (simulationId) => {
 }
 
 /**
- * 实时getgeneratein的Simulationconfigure
+ * Get simulation config in real-time during generation
  * @param {string} simulationId
- * @returns {Promise} returnconfigureinformation，contain元dataandconfigurecontent
+ * @returns {Promise} Returns config information, including metadata and config content
  */
 export const getSimulationConfigRealtime = (simulationId) => {
   return service.get(`/api/simulation/${simulationId}/config/realtime`)
 }
 
 /**
- * 列出allSimulation
- * @param {string} projectId - optional，byProject IDfilter
+ * List all simulations
+ * @param {string} projectId - optional, filter by Project ID
  */
 export const listSimulations = (projectId) => {
   const params = projectId ? { project_id: projectId } : {}
@@ -93,7 +93,7 @@ export const stopSimulation = (data) => {
 }
 
 /**
- * getSimulationrun实时status
+ * Get simulation run real-time status
  * @param {string} simulationId
  */
 export const getRunStatus = (simulationId) => {
@@ -101,7 +101,7 @@ export const getRunStatus = (simulationId) => {
 }
 
 /**
- * getSimulationrundetailedstatus（contain最近action）
+ * Get simulation run detailed status (including recent actions)
  * @param {string} simulationId
  */
 export const getRunStatusDetail = (simulationId) => {
@@ -109,11 +109,11 @@ export const getRunStatusDetail = (simulationId) => {
 }
 
 /**
- * getSimulationin的帖子
+ * Get simulation posts
  * @param {string} simulationId
  * @param {string} platform - 'reddit' | 'twitter'
- * @param {number} limit - returncount
- * @param {number} offset - 偏移量
+ * @param {number} limit - return count
+ * @param {number} offset - offset
  */
 export const getSimulationPosts = (simulationId, platform = 'reddit', limit = 50, offset = 0) => {
   return service.get(`/api/simulation/${simulationId}/posts`, {
@@ -122,10 +122,10 @@ export const getSimulationPosts = (simulationId, platform = 'reddit', limit = 50
 }
 
 /**
- * getSimulation时between线（byround汇总）
+ * Get simulation timeline (summarized by round)
  * @param {string} simulationId
- * @param {number} startRound - 起始round
- * @param {number} endRound - endround
+ * @param {number} startRound - start round
+ * @param {number} endRound - end round
  */
 export const getSimulationTimeline = (simulationId, startRound = 0, endRound = null) => {
   const params = { start_round: startRound }
@@ -136,7 +136,7 @@ export const getSimulationTimeline = (simulationId, startRound = 0, endRound = n
 }
 
 /**
- * getAgentcountinformation
+ * Get agent statistics
  * @param {string} simulationId
  */
 export const getAgentStats = (simulationId) => {
@@ -144,7 +144,7 @@ export const getAgentStats = (simulationId) => {
 }
 
 /**
- * getSimulationaction历史
+ * Get simulation action history
  * @param {string} simulationId
  * @param {Object} params - { limit, offset, platform, agent_id, round_num }
  */
@@ -153,7 +153,7 @@ export const getSimulationActions = (simulationId, params = {}) => {
 }
 
 /**
- * closeSimulationenvironment（优雅退出）
+ * Close simulation environment (graceful shutdown)
  * @param {Object} data - { simulation_id, timeout? }
  */
 export const closeSimulationEnv = (data) => {
@@ -161,7 +161,7 @@ export const closeSimulationEnv = (data) => {
 }
 
 /**
- * getSimulationenvironmentstatus
+ * Get simulation environment status
  * @param {Object} data - { simulation_id }
  */
 export const getEnvStatus = (data) => {
@@ -169,7 +169,7 @@ export const getEnvStatus = (data) => {
 }
 
 /**
- * 批量采访 Agent
+ * Batch interview agents
  * @param {Object} data - { simulation_id, interviews: [{ agent_id, prompt }] }
  */
 export const interviewAgents = (data) => {
@@ -177,11 +177,10 @@ export const interviewAgents = (data) => {
 }
 
 /**
- * get历史Simulationlist（带projectdetails）
- * for首页历史project展示
- * @param {number} limit - returncount限制
+ * Get historical simulation list (with project details)
+ * For home page historical project display
+ * @param {number} limit - return count limit
  */
 export const getSimulationHistory = (limit = 20) => {
   return service.get('/api/simulation/history', { params: { limit } })
 }
-

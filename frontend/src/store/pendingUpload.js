@@ -1,6 +1,6 @@
 /**
- * temporarystore待on传的fileandrequirement
- * for首页点击Startengineafter立即跳转，inProcess页面then进行APIcall
+ * Temporary store for pending upload files and requirements
+ * After clicking Start Engine on home page, immediately navigate to Process page to perform API calls
  */
 import { reactive } from 'vue'
 
