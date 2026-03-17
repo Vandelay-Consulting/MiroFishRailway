@@ -1,6 +1,6 @@
 """
-LLM客户端封装
-统一使用OpenAI格式调用
+LLM Client Wrapper
+Unified OpenAI-format API calls
 """
 
 import json
@@ -12,44 +12,41 @@ from ..config import Config
 
 
 class LLMClient:
-    """LLM客户端"""
-    
+    """LLM Client"""
+
     def __init__(
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        model: Optional[str] = None
+        model: Optional[str] = None,
     ):
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
-        
+
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 未配置")
-        
-        self.client = OpenAI(
-            api_key=self.api_key,
-            base_url=self.base_url
-        )
-    
+            raise ValueError("LLM_API_KEY not configured")
+
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
     def chat(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         max_tokens: int = 4096,
-        response_format: Optional[Dict] = None
+        response_format: Optional[Dict] = None,
     ) -> str:
         """
-        发送聊天请求
-        
+        Send a chat request
+
         Args:
-            messages: 消息列表
-            temperature: 温度参数
-            max_tokens: 最大token数
-            response_format: 响应格式（如JSON模式）
-            
+            messages: Message list
+            temperature: Temperature parameter
+            max_tokens: Maximum token count
+            response_format: Response format (e.g., JSON mode)
+
         Returns:
-            模型响应文本
+            Model response text
         """
         kwargs = {
             "model": self.model,
@@ -57,47 +54,96 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        
+
         if response_format:
             kwargs["response_format"] = response_format
-        
+
         response = self.client.chat.completions.create(**kwargs)
         content = response.choices[0].message.content
-        # 部分模型（如MiniMax M2.5）会在content中包含<think>思考内容，需要移除
-        content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
+        # Some models (e.g., MiniMax M2.5) include <think> content in response, need to remove
+        content = re.sub(r"<think>[\s\S]*?</think>", "", content).strip()
         return content
-    
+
     def chat_json(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.3,
-        max_tokens: int = 4096
+        max_tokens: int = 4096,
     ) -> Dict[str, Any]:
         """
-        发送聊天请求并返回JSON
-        
+        Send a chat request and return JSON
+
         Args:
-            messages: 消息列表
-            temperature: 温度参数
-            max_tokens: 最大token数
-            
+            messages: Message list
+            temperature: Temperature parameter
+            max_tokens: Maximum token count
+
         Returns:
-            解析后的JSON对象
+            Parsed JSON object
         """
         response = self.chat(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            response_format={"type": "json_object"}
         )
-        # 清理markdown代码块标记
+        # Clean up markdown code block markers
         cleaned_response = response.strip()
-        cleaned_response = re.sub(r'^```(?:json)?\s*\n?', '', cleaned_response, flags=re.IGNORECASE)
-        cleaned_response = re.sub(r'\n?```\s*$', '', cleaned_response)
+        # Remove think tags (MiniMax and similar models)
+        cleaned_response = re.sub(
+            r"<think>[\s\S]*?</think>", "", cleaned_response, flags=re.IGNORECASE
+        )
+        cleaned_response = re.sub(
+            r"^```(?:json)?\s*\n?", "", cleaned_response, flags=re.IGNORECASE
+        )
+        cleaned_response = re.sub(r"\n?```\s*$", "", cleaned_response)
         cleaned_response = cleaned_response.strip()
 
+        # If response is empty
+        if not cleaned_response:
+            raise ValueError("LLM returned an empty response")
+
+        # Try to parse JSON, attempt repair if failed
         try:
             return json.loads(cleaned_response)
-        except json.JSONDecodeError:
-            raise ValueError(f"LLM返回的JSON格式无效: {cleaned_response}")
+        except json.JSONDecodeError as e:
+            # Try to fix common LLM JSON errors
+            repaired = self._repair_json(cleaned_response)
+            try:
+                return json.loads(repaired)
+            except json.JSONDecodeError:
+                # Repair failed, raise original error
+                raise ValueError(f"LLM returned invalid JSON format: {cleaned_response}")
 
+    def _repair_json(self, text: str) -> str:
+        """
+        Attempt to repair common LLM JSON errors
+
+        Issues fixed:
+        1. Duplicate attributes arrays (first string array, then object array)
+        2. Extra commas
+        3. Missing quotes
+        4. Trailing commas
+        """
+
+        # Fix 1: Handle duplicate array issue in attributes field
+        # Pattern: "attributes": ["a", "b"],\n[\n {...}, {...}\n]
+        # Should become: "attributes": [\n {...}, {...}\n]
+        def fix_duplicate_attributes(match):
+            # Keep the second array (object array), discard the first (string array)
+            return '"attributes":' + match.group(2)
+
+        # Match "attributes": [...],\n[...] pattern (two consecutive arrays)
+        pattern = r'"attributes"\s*:\s*(\[[^\]]*\])\s*,?\s*([\s\S]*?\])'
+        text = re.sub(pattern, fix_duplicate_attributes, text)
+
+        # Fix 2: Remove trailing commas after last element in objects/arrays
+        text = re.sub(r",(\s*[}\]])", r"\1", text)
+
+        # Fix 3: Fix single quotes (replace with double quotes)
+        text = re.sub(r"'([^']*)'(?=\s*:)", r'"\1"', text)  # Key names
+        text = re.sub(r":\s*'([^']*)'", r': "\1"', text)  # String values
+
+        # Fix 4: Fix missing commas (add comma before key on new line)
+        text = re.sub(r'(\S)\s*\n\s*"', r'\1,\n"', text)
+
+        return text
